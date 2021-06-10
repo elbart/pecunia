@@ -1,0 +1,17 @@
+[package]
+name = "pecunia"
+version = "0.1.0"
+authors = ["Tim Eggert <tim@elbart.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1.0", default-features = false, features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+pretty_env_logger = "0.4"
+anyhow = "1"
