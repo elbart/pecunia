@@ -55,10 +55,10 @@ impl From<HeaderMap> for IexCloudResponseHeaders {
 
 impl ApiClient {
     /// Creates a new API client.
-    pub fn new(api_token: String) -> Self {
+    pub fn new(api_token: &String) -> Self {
         Self {
             base_url: BASE_URL.to_string(),
-            api_token,
+            api_token: api_token.clone(),
             http_client: Client::new(),
         }
     }
@@ -110,7 +110,7 @@ impl ApiClient {
     pub async fn get_historical_prices(
         &self,
         symbol: &String,
-        date: String,
+        date: &String,
     ) -> Result<PricesResponse> {
         let url = format!("{}/stock/{}/chart/date/{}", self.base_url, symbol, date);
 

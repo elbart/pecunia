@@ -4,8 +4,14 @@ use dirs::home_dir;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+pub struct Database {
+    pub url: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Configuration {
     pub iex_api_token: String,
+    pub database: Database,
 }
 
 impl Configuration {

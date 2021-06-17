@@ -1,0 +1,17 @@
+---
+version: "3"
+services:
+  db:
+    image: timescale/timescaledb:latest-pg12
+    ports: 
+      - 5432:5432
+    environment: 
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_USER: pecunia
+      POSTGRES_DB: pecunia
+  grafana:
+    image: grafana/grafana:latest
+    ports: 
+      - 3000:3000
+    links: 
+      - db
