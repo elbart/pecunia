@@ -20,3 +20,11 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Buildd docker image
+        uses: docker/build-push-action@v1
+        with:
+          registry: ghcr.io
+          username: "elbart"
+          password: ${{ secrets.PAT }}
+          repository: elbart/pecunia
+          tags: latest
