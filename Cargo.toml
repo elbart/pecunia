@@ -4,7 +4,14 @@ version = "0.1.0"
 authors = ["Tim Eggert <tim@elbart.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# See more keys and their definitions at
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "pecunia"
+path = "src/cli.rs"
 
 [dependencies]
 structopt = "0.3"
@@ -17,3 +24,4 @@ pretty_env_logger = "0.4"
 anyhow = "1"
 config = "0.11"
 dirs = "3.0"
+sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }

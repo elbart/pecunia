@@ -1,0 +1,2 @@
+[database]
+url = "postgres://pecunia:secret123@localhost:5432/pecunia"
