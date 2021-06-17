@@ -9,3 +9,9 @@ services:
       POSTGRES_PASSWORD: secret123
       POSTGRES_USER: pecunia
       POSTGRES_DB: pecunia
+  grafana:
+    image: grafana/grafana:latest
+    ports: 
+      - 3000:3000
+    links: 
+      - db

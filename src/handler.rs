@@ -55,9 +55,9 @@ impl Handler {
         let mut res = Vec::new();
         let parsed_date_from = NaiveDate::parse_from_str(&date_from, "%Y-%m-%d")?;
         let parsed_date_to = NaiveDate::parse_from_str(&date_to, "%Y-%m-%d")?;
-        if parsed_date_from >= parsed_date_to {
+        if parsed_date_from > parsed_date_to {
             return Err(anyhow!(
-                "{:?} is bigger or equals to {:?}",
+                "{:?} is bigger than {:?}",
                 parsed_date_from,
                 parsed_date_to
             ));
