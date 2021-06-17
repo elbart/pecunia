@@ -1,5 +1,5 @@
 use crate::{
-    cli::{get_authentication_information, Command, PecuniaCli, Resource},
+    cli::{Command, PecuniaCli, Resource},
     client::ApiClient,
 };
 use anyhow::Result;
