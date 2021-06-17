@@ -8,6 +8,7 @@ use structopt::StructOpt;
 
 mod cli;
 mod client;
+mod configuration;
 mod model;
 
 #[tokio::main]
@@ -17,13 +18,13 @@ async fn main() -> Result<()> {
 
     debug!("Given command / subcommand + arguments are: {:?}", opt);
 
-    let auth_data = get_authentication_information(None)?;
+    let cfg = configuration::Configuration::new().unwrap();
 
     match opt.cmd {
         Command::Get(c) => match c {
             Resource::Company { symbol } => {
                 info!("Got subcommand 'get company'. Fetching company information ...");
-                let client = ApiClient::new(auth_data.api_token);
+                let client = ApiClient::new(cfg.iex_api_token);
                 println!(
                     "{}",
                     serde_json::to_string_pretty(&client.get_company(&symbol).await?)?
@@ -31,7 +32,7 @@ async fn main() -> Result<()> {
             }
             Resource::IntradayPrices { symbol } => {
                 info!("Got subcommand 'get intraday-prices'. Fetching intraday price information information ...");
-                let client = ApiClient::new(auth_data.api_token);
+                let client = ApiClient::new(cfg.iex_api_token);
                 println!(
                     "{}",
                     serde_json::to_string_pretty(&client.get_intraday_prices(&symbol).await?)?
@@ -39,7 +40,7 @@ async fn main() -> Result<()> {
             }
             Resource::HistoricalPrices { symbol, date } => {
                 info!("Got subcommand 'get historical-prices'. Fetching historical price information information ...");
-                let client = ApiClient::new(auth_data.api_token);
+                let client = ApiClient::new(cfg.iex_api_token);
                 println!(
                     "{}",
                     serde_json::to_string_pretty(
