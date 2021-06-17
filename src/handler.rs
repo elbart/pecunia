@@ -85,6 +85,7 @@ impl Handler {
         symbol: &String,
         items: &Vec<IntradayPrice>,
     ) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
         for p in items {
             let time = NaiveDateTime::parse_from_str(
                 &format!("{} {}", &p.date, &p.minute),
@@ -118,9 +119,11 @@ impl Handler {
                 p.number_of_trades as i32,
                 p.change_over_time
             )
-            .execute(&self.pool)
+            .execute(&mut tx)
             .await?;
         }
+
+        tx.commit().await?;
 
         Ok(())
     }
