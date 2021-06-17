@@ -1,11 +1,6 @@
-use std::convert::TryInto;
-
-use anyhow::Result;
-use log::info;
-use sqlx::{
-    types::chrono::{NaiveDate, NaiveDateTime},
-    Pool, Postgres,
-};
+use anyhow::{anyhow, Result};
+use chrono::{NaiveDate, NaiveDateTime};
+use sqlx::{Pool, Postgres};
 
 use crate::{
     client::ApiClient,
@@ -17,7 +12,7 @@ use crate::{
 pub struct Handler {
     pool: Pool<Postgres>,
     api_client: ApiClient,
-    config: Configuration,
+    _config: Configuration,
 }
 
 impl Handler {
@@ -25,7 +20,7 @@ impl Handler {
         Ok(Self {
             pool: get_db(&config).await?,
             api_client: ApiClient::new(&config.iex_api_token),
-            config,
+            _config: config,
         })
     }
 
@@ -37,8 +32,60 @@ impl Handler {
 
     pub async fn get_intraday_prices(&self, symbol: &String) -> Result<Vec<IntradayPrice>> {
         let data = self.api_client.get_intraday_prices(&symbol).await?;
+        self.store_intraday_prices(symbol, &data).await?;
+        Ok(data)
+    }
 
-        for p in &data {
+    pub async fn get_historical_prices(
+        &self,
+        symbol: &String,
+        date: &String,
+    ) -> Result<Vec<IntradayPrice>> {
+        let data = self.api_client.get_historical_prices(symbol, date).await?;
+        self.store_intraday_prices(symbol, &data).await?;
+        Ok(data)
+    }
+
+    pub async fn get_historical_prices_batch(
+        &self,
+        symbols: Vec<String>,
+        date_from: &String,
+        date_to: &String,
+    ) -> Result<Vec<Vec<IntradayPrice>>> {
+        let mut res = Vec::new();
+        let parsed_date_from = NaiveDate::parse_from_str(&date_from, "%Y-%m-%d")?;
+        let parsed_date_to = NaiveDate::parse_from_str(&date_to, "%Y-%m-%d")?;
+        if parsed_date_from >= parsed_date_to {
+            return Err(anyhow!(
+                "{:?} is bigger or equals to {:?}",
+                parsed_date_from,
+                parsed_date_to
+            ));
+        }
+
+        let mut current_date = parsed_date_from.clone();
+        while current_date <= parsed_date_to {
+            for symbol in &symbols {
+                let data = self
+                    .api_client
+                    .get_historical_prices(symbol, &current_date.format("%Y%m%d").to_string())
+                    .await?;
+
+                self.store_intraday_prices(symbol, &data).await?;
+                res.push(data);
+            }
+
+            current_date += chrono::Duration::days(1);
+        }
+        Ok(res)
+    }
+
+    async fn store_intraday_prices(
+        &self,
+        symbol: &String,
+        items: &Vec<IntradayPrice>,
+    ) -> Result<()> {
+        for p in items {
             let time = NaiveDateTime::parse_from_str(
                 &format!("{} {}", &p.date, &p.minute),
                 "%Y-%m-%d %H:%M",
@@ -57,7 +104,8 @@ impl Handler {
                     notional,
                     number_of_trades,
                     change_over_time)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"#,
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                ON CONFLICT ("time", ticker) DO NOTHING"#,
                 time,
                 symbol,
                 p.high,
@@ -74,16 +122,6 @@ impl Handler {
             .await?;
         }
 
-        Ok(data)
-    }
-
-    pub async fn get_historical_prices(
-        &self,
-        symbol: &String,
-        date: &String,
-    ) -> Result<Vec<IntradayPrice>> {
-        let data = self.api_client.get_historical_prices(symbol, date).await?;
-
-        Ok(data)
+        Ok(())
     }
 }

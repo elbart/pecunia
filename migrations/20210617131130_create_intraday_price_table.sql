@@ -2,10 +2,14 @@
 ----------------------------------------
 -- Hypertable to store financial intraday data
 ----------------------------------------
+-- Step 0: Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Step 1: Define regular table
 CREATE TABLE IF NOT EXISTS intraday_prices (
-
-   time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+   id UUID NOT NULL DEFAULT uuid_generate_v4(),
+   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+   "time" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
    ticker text NULL,
    high real NULL,
    low real NULL,
@@ -15,7 +19,9 @@ CREATE TABLE IF NOT EXISTS intraday_prices (
    volume real NULL,
    notional real NULL,
    number_of_trades int NULL,
-   change_over_time real NULL
+   change_over_time real NULL,
+
+   UNIQUE ("time", ticker)
 );
 
 -- Step 2: Turn into hypertable
